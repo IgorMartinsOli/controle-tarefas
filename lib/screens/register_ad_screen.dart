@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:app_ad/models/ad.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 // ignore: must_be_immutable
 class CadastroAnuncio extends StatefulWidget {
@@ -63,8 +64,15 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                   await _picker.pickImage(source: ImageSource.camera);
 
               if (pickedFile != null) {
+                File imagemOriginal = File(pickedFile.path);
+                final directory = await getApplicationDocumentsDirectory();
+                String _localPath = directory.path;
+                String imageName = UniqueKey().toString();
+                File imagemSalva = await imagemOriginal
+                    .copy("$_localPath/image_$imageName.png");
+
                 setState(() {
-                  _image = File(pickedFile.path);
+                  _image = imagemSalva;
                 });
               }
             }),

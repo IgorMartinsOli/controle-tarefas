@@ -75,6 +75,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     _lista.removeAt(index);
                     _lista.insert(index, editAd);
+                    _filePersistence.saveData(_lista);
+
+                    const SnackBar snackBar = SnackBar(
+                      content: Text("Anuncio removida com sucesso"),
+                      backgroundColor: Colors.red,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   });
                 }
               }
@@ -89,6 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     _lista.removeAt(index);
                     _lista.insert(index, editAd);
+                    _filePersistence.saveData(_lista);
+
+                    const SnackBar snackBar = SnackBar(
+                      content: Text("Anuncio editado com sucesso"),
+                      backgroundColor: Colors.yellow,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   });
                 }
                 return false;
@@ -194,6 +210,12 @@ class _HomeScreenState extends State<HomeScreen> {
               setState(() {
                 _lista.add(newAd);
                 _filePersistence.saveData(_lista);
+                const SnackBar snackBar = SnackBar(
+                  content: Text("Anunciado com sucesso"),
+                  backgroundColor: Colors.green,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
               });
             }
           } catch (error) {

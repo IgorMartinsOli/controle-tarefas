@@ -14,7 +14,7 @@ class Ad {
     this.subTitle = map['subTitle'];
     this.price = map['price'];
     this.done = map['done'];
-    //this.image = map['imagePath'] != "" ? File(map['imagePath']) : null;
+    this.image = map['imagePath'] != "" ? File(map['imagePath']) : null;
   }
 
   Map<String, dynamic> toMap() {
@@ -23,7 +23,7 @@ class Ad {
       "subTitle": this.subTitle,
       "price": this.price,
       "done": this.done,
-      //"imagePath": this.image != null ? this.image!.path : "",
+      "imagePath": this.image != null ? this.image!.path : "",
     };
     return map;
   }
