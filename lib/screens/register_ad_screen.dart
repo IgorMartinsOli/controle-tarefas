@@ -4,6 +4,7 @@ import 'package:app_ad/models/ad.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+// ignore: must_be_immutable
 class CadastroAnuncio extends StatefulWidget {
   Ad? ad;
 
@@ -14,10 +15,12 @@ class CadastroAnuncio extends StatefulWidget {
 }
 
 class _CadastroAnuncioState extends State<CadastroAnuncio> {
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _descController = TextEditingController();
-  TextEditingController _priceController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  File? _image;
+
   @override
   void initState() {
     super.initState();
@@ -26,14 +29,13 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
         _titleController.text = widget.ad!.title;
         _descController.text = widget.ad!.subTitle;
         _priceController.text = widget.ad!.price;
+        _image = widget.ad!.image;
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    File? _image;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -43,7 +45,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
       body: Column(children: [
         GestureDetector(
             child: Container(
-                margin: EdgeInsets.symmetric(vertical: 20),
+                margin: const EdgeInsets.symmetric(vertical: 20),
                 height: 120,
                 width: 120,
                 decoration: BoxDecoration(
@@ -53,7 +55,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                 child: _image == null
                     ? Icon(Icons.add_a_photo, size: 30)
                     : ClipOval(
-                        child: Image.file(_image),
+                        child: Image.file(_image!),
                       )),
             onTap: () async {
               final ImagePicker _picker = ImagePicker();
@@ -61,7 +63,9 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                   await _picker.pickImage(source: ImageSource.camera);
 
               if (pickedFile != null) {
-                _image = File(pickedFile.path);
+                setState(() {
+                  _image = File(pickedFile.path);
+                });
               }
             }),
         Form(
@@ -69,11 +73,12 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
           child: Column(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 child: TextFormField(
                   controller: _titleController,
-                  style: TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
+                  style: const TextStyle(fontSize: 18),
+                  decoration: const InputDecoration(
                     labelText: "Titulo",
                     labelStyle: TextStyle(fontSize: 18),
                   ),
@@ -85,11 +90,12 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 child: TextFormField(
                   controller: _descController,
-                  style: TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
+                  style: const TextStyle(fontSize: 18),
+                  decoration: const InputDecoration(
                     labelText: "Descrição",
                     labelStyle: TextStyle(fontSize: 18),
                   ),
@@ -101,11 +107,12 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 child: TextFormField(
                   controller: _priceController,
-                  style: TextStyle(fontSize: 18),
-                  decoration: InputDecoration(
+                  style: const TextStyle(fontSize: 18),
+                  decoration: const InputDecoration(
                     labelText: "Valor",
                     labelStyle: TextStyle(fontSize: 18),
                   ),
@@ -120,7 +127,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                 children: [
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       height: 40,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -128,8 +135,8 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                                 ? Colors.green
                                 : Colors.orange),
                         child: Text(widget.ad == null ? "Cadastrar" : "Editar",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 18)),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18)),
                         onPressed: () {
                           FocusScope.of(context).unfocus();
                           if (_formKey.currentState!.validate()) {
@@ -138,6 +145,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                                 _titleController.text,
                                 _descController.text,
                                 _priceController.text,
+                                image: _image,
                               );
                               Navigator.pop(context, newAd);
                             } else {
@@ -153,11 +161,11 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                   ),
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       height: 40,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(primary: Colors.red),
-                        child: Text("Cancelar",
+                        child: const Text("Cancelar",
                             style:
                                 TextStyle(color: Colors.white, fontSize: 18)),
                         onPressed: () {

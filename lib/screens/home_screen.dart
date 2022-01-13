@@ -81,6 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             child: ListTile(
+              leading: anuncio.image != null
+                  ? CircleAvatar(
+                      child: ClipOval(
+                        child: Image.file(anuncio.image!),
+                      ),
+                    )
+                  : const SizedBox(),
               title: Text(anuncio.title,
                   style: const TextStyle(
                     fontSize: 18,
@@ -96,6 +103,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   anuncio.done = !anuncio.done;
                 });
+              },
+              onLongPress: () async {
+                showBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return Container(
+                          height: 250,
+                          padding: EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                  leading: const Icon(Icons.email),
+                                  title: const Text("Enviar por email"),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final Uri params = Uri(
+                                        scheme: "mailto",
+                                        path: "igrmartoli@gmail.com",
+                                        queryParameters: {
+                                          "subject": "Duvidas sobre produto do app",
+                                          "body": "Olá, tenho duvida em um produto anunciado no app."
+                                        });
+
+                                    final url = params.toString();
+                                    if (!await launch(url.toString());) {
+                                      throw 'não foi possivel abrir a url ${url}';
+                                    }
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.sms),
+                                  title: const Text("Enviar por sms"),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final Uri params = Uri(
+                                        scheme: "sms",
+                                        path: "+5564993001158",
+                                        queryParameters: {
+                                          "body": "Olá, tenho duvida em um produto anunciado no app."
+                                        });
+
+                                    final url = params.toString();
+                                    if (!await launch(url)) {
+                                      throw 'não foi possivel abrir a url ${url}';
+                                    }
+                                  }),
+                              ListTile(
+                                  leading: const Icon(Icons.cancel),
+                                  title: const Text("Cancelar"),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  })
+                            ],
+                          ));
+                    });
               },
             ),
           );
