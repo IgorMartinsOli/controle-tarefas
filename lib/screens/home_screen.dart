@@ -1,5 +1,7 @@
+import 'package:app_ad/databases/file_persistences.dart';
 import 'package:app_ad/models/ad.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'register_ad_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,6 +13,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Ad> _lista = List.empty(growable: true);
+  final FilePersistence _filePersistence = FilePersistence();
+
+  @override
+  void initState() {
+    super.initState();
+    _filePersistence.getData().then((listaAds) {
+      setState(() {
+        if (listaAds != null) {
+          _lista = listaAds;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,12 +138,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         scheme: "mailto",
                                         path: "igrmartoli@gmail.com",
                                         queryParameters: {
-                                          "subject": "Duvidas sobre produto do app",
-                                          "body": "Olá, tenho duvida em um produto anunciado no app."
+                                          "subject":
+                                              "Duvidas sobre produto do app",
+                                          "body":
+                                              "Olá, tenho duvida em um produto anunciado no app."
                                         });
 
                                     final url = params.toString();
-                                    if (!await launch(url.toString());) {
+                                    if (!await launch(url.toString())) {
                                       throw 'não foi possivel abrir a url ${url}';
                                     }
                                   }),
@@ -140,7 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         scheme: "sms",
                                         path: "+5564993001158",
                                         queryParameters: {
-                                          "body": "Olá, tenho duvida em um produto anunciado no app."
+                                          "body":
+                                              "Olá, tenho duvida em um produto anunciado no app."
                                         });
 
                                     final url = params.toString();
@@ -174,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (newAd != null) {
               setState(() {
                 _lista.add(newAd);
+                _filePersistence.saveData(_lista);
               });
             }
           } catch (error) {
