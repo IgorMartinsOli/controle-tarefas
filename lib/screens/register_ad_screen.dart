@@ -20,19 +20,19 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  File? _image;
+  String? _image;
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      if (widget.ad != null) {
+    if (widget.ad != null) {
+      setState(() {
         _titleController.text = widget.ad!.title;
         _descController.text = widget.ad!.subTitle;
-        _priceController.text = widget.ad!.price;
+        _priceController.text = widget.ad!.price.toString();
         _image = widget.ad!.image;
-      }
-    });
+      });
+    }
   }
 
   @override
@@ -54,9 +54,9 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                     border: Border.all(width: 1, color: Colors.grey[400]!),
                     shape: BoxShape.circle),
                 child: _image == null
-                    ? Icon(Icons.add_a_photo, size: 30)
-                    : ClipOval(
-                        child: Image.file(_image!),
+                    ? const Icon(Icons.add_a_photo)
+                    : CircleAvatar(
+                        backgroundImage: FileImage(File(_image!)),
                       )),
             onTap: () async {
               final ImagePicker _picker = ImagePicker();
@@ -72,7 +72,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                     .copy("$_localPath/image_$imageName.png");
 
                 setState(() {
-                  _image = imagemSalva;
+                  _image = imagemSalva.path;
                 });
               }
             }),
@@ -120,9 +120,10 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                 child: TextFormField(
                   controller: _priceController,
                   style: const TextStyle(fontSize: 18),
+                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.attach_money),
                     labelText: "Valor",
-                    labelStyle: TextStyle(fontSize: 18),
                   ),
                   validator: (value) {
                     if (value != null && value.isEmpty) {
@@ -149,18 +150,14 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                           FocusScope.of(context).unfocus();
                           if (_formKey.currentState!.validate()) {
                             if (widget.ad == null) {
-                              Ad newAd = Ad(
-                                _titleController.text,
-                                _descController.text,
-                                _priceController.text,
+                              Ad novoAnuncio = Ad(
+                                id: widget.ad == null ? null : widget.ad!.id,
+                                title: _titleController.text,
+                                subTitle: _descController.text,
+                                price: double.parse(_priceController.text),
                                 image: _image,
                               );
-                              Navigator.pop(context, newAd);
-                            } else {
-                              widget.ad!.title = _titleController.text;
-                              widget.ad!.subTitle = _descController.text;
-                              widget.ad!.price = _priceController.text;
-                              Navigator.pop(context, widget.ad);
+                              Navigator.pop(context, novoAnuncio);
                             }
                           }
                         },

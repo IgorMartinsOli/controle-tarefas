@@ -3,16 +3,20 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(MaterialApp(
-    title: 'Aplicativo de tarefas',
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      primarySwatch: Colors.green,
-    ),
-    home: HomeScreen(),
-    /*initialRoute: "/",
-    routes: {
-      "/": (context) => HomeScreen(),
-      "/cadastro": (context) => CadastroScreen(),
-    },*/
-  ));
+      title: 'Aplicativo de tarefas',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+          primarySwatch: Colors.amber,
+          inputDecorationTheme: InputDecorationTheme(
+            labelStyle: TextStyle(color: Colors.grey[600]!, fontSize: 22),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.yellow[700]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.yellow[700]!),
+            ),
+            alignLabelWithHint: true,
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+          )),
+      home: HomeScreen()));
 }

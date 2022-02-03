@@ -1,4 +1,6 @@
-import 'package:app_ad/databases/file_persistences.dart';
+import 'dart:io';
+
+import 'package:app_ad/database/sqlite/anuncio_helper.dart';
 import 'package:app_ad/models/ad.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,16 +15,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Ad> _lista = List.empty(growable: true);
-  final FilePersistence _filePersistence = FilePersistence();
+  //final FilePersistence _filePersistence = FilePersistence();
+  AnuncioHelper _helper = AnuncioHelper();
 
   @override
   void initState() {
     super.initState();
-    _filePersistence.getData().then((listaAds) {
+    _helper.getAll().then((data) {
       setState(() {
-        if (listaAds != null) {
-          _lista = listaAds;
-        }
+        _lista = data;
       });
     });
   }
@@ -63,25 +64,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             onDismissed: (direction) async {
               if (direction == DismissDirection.endToStart) {
-                setState(() {
-                  _lista.removeAt(index);
-                });
-              } else if (direction == DismissDirection.startToEnd) {
-                Ad? editAd = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CadastroAnuncio(ad: anuncio)));
-                if (editAd != null) {
+                int? qtd = await _helper.delete(anuncio);
+                if (qtd != null && qtd > 0) {
                   setState(() {
                     _lista.removeAt(index);
-                    _lista.insert(index, editAd);
-                    _filePersistence.saveData(_lista);
-
-                    const SnackBar snackBar = SnackBar(
-                      content: Text("Anuncio removida com sucesso"),
-                      backgroundColor: Colors.red,
-                    );
-
+                    const snackBar = SnackBar(
+                        content: Text('Anúncio removido com sucesso!'),
+                        backgroundColor: Colors.red);
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   });
                 }
@@ -94,18 +83,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(
                         builder: (context) => CadastroAnuncio(ad: anuncio)));
                 if (editAd != null) {
-                  setState(() {
-                    _lista.removeAt(index);
-                    _lista.insert(index, editAd);
-                    _filePersistence.saveData(_lista);
+                  int? qtd = await _helper.edit(editAd);
+                  if (qtd != null && qtd > 0) {
+                    setState(() {
+                      _lista.removeAt(index);
+                      _lista.insert(index, editAd);
 
-                    const SnackBar snackBar = SnackBar(
-                      content: Text("Anuncio editado com sucesso"),
-                      backgroundColor: Colors.yellow,
-                    );
+                      const snackBar = SnackBar(
+                        content: Text("Anuncio editado com sucesso"),
+                        backgroundColor: Colors.yellow,
+                      );
 
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  });
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    });
+                  }
                 }
                 return false;
               } else if (direction == DismissDirection.endToStart) {
@@ -115,9 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListTile(
               leading: anuncio.image != null
                   ? CircleAvatar(
-                      child: ClipOval(
-                        child: Image.file(anuncio.image!),
-                      ),
+                      backgroundImage: FileImage(File(anuncio.image!)),
                     )
                   : const SizedBox(),
               title: Text(anuncio.title,
@@ -131,18 +120,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.grey,
                   )),
               trailing: Text("R\$ ${anuncio.price}"),
-              onTap: () {
-                setState(() {
-                  anuncio.done = !anuncio.done;
-                });
-              },
               onLongPress: () async {
                 showBottomSheet(
                     context: context,
                     builder: (context) {
                       return Container(
                           height: 250,
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: Column(
                             children: [
                               ListTile(
@@ -207,16 +191,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(builder: (context) => CadastroAnuncio()));
 
             if (newAd != null) {
-              setState(() {
-                _lista.add(newAd);
-                _filePersistence.saveData(_lista);
-                const SnackBar snackBar = SnackBar(
-                  content: Text("Anunciado com sucesso"),
-                  backgroundColor: Colors.green,
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              });
+              Ad? savedAd = await _helper.save(newAd);
+              if (savedAd != null) {
+                setState(() {
+                  _lista.add(savedAd);
+                  const SnackBar snackBar = SnackBar(
+                    content: Text("Anunciado com sucesso"),
+                    backgroundColor: Colors.green,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                });
+              }
             }
           } catch (error) {
             print("Error: ${error.toString()}");

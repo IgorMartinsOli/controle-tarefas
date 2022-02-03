@@ -1,30 +1,41 @@
-import 'dart:io';
+import 'package:app_ad/database/sqlite/anuncio_helper.dart';
 
 class Ad {
+  late int? id;
   late String title;
   late String subTitle;
-  late String price;
-  bool done = false;
-  File? image;
+  late double price;
+  String? image;
 
-  Ad(this.title, this.subTitle, this.price, {this.image});
+  Ad({
+    this.id,
+    required this.title,
+    required this.subTitle,
+    required this.price,
+    this.image,
+  });
 
   Ad.fromMap(Map map) {
-    this.title = map['title'];
-    this.subTitle = map['subTitle'];
-    this.price = map['price'];
-    this.done = map['done'];
-    this.image = map['imagePath'] != "" ? File(map['imagePath']) : null;
+    this.id = map[AnuncioHelper.idColumn];
+    this.title = map[AnuncioHelper.tituloColumn];
+    this.subTitle = map[AnuncioHelper.descricaoColumn];
+    this.price = map[AnuncioHelper.precoColumn];
+    this.image = map[AnuncioHelper.imagePathColumn];
   }
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
-      "title": this.title,
-      "subTitle": this.subTitle,
-      "price": this.price,
-      "done": this.done,
-      "imagePath": this.image != null ? this.image!.path : "",
+      'id': this.id,
+      'titulo': this.title,
+      'descricao': this.subTitle,
+      'preco': this.price,
+      'imagePath': this.image
     };
     return map;
+  }
+
+  @override
+  String toString() {
+    return "Anuncio(id: $id, titulo: $title, descricao: $subTitle, preco: $price)";
   }
 }
