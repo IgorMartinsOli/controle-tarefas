@@ -1,41 +1,33 @@
-import 'package:app_ad/database/sqlite/anuncio_helper.dart';
+import 'dart:convert';
+
+Ad postFromJson(String str) => Ad.fromJson(json.decode(str));
+
+String postToJson(Ad data) => json.encode(data.toJson());
 
 class Ad {
-  late int? id;
-  late String title;
-  late String subTitle;
-  late double price;
-  String? image;
-
   Ad({
-    this.id,
-    required this.title,
-    required this.subTitle,
-    required this.price,
-    this.image,
+    required this.id,
+    required this.titulo,
+    required this.descricao,
+    required this.preco,
   });
 
-  Ad.fromMap(Map map) {
-    this.id = map[AnuncioHelper.idColumn];
-    this.title = map[AnuncioHelper.tituloColumn];
-    this.subTitle = map[AnuncioHelper.descricaoColumn];
-    this.price = map[AnuncioHelper.precoColumn];
-    this.image = map[AnuncioHelper.imagePathColumn];
-  }
+  int id;
+  String titulo;
+  String descricao;
+  double preco;
 
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = {
-      'id': this.id,
-      'titulo': this.title,
-      'descricao': this.subTitle,
-      'preco': this.price,
-      'imagePath': this.image
-    };
-    return map;
-  }
+  factory Ad.fromJson(Map<String, dynamic> json) => Ad(
+        id: json["id"],
+        titulo: json["titulo"],
+        descricao: json["descricao"],
+        preco: json["preco"],
+      );
 
-  @override
-  String toString() {
-    return "Anuncio(id: $id, titulo: $title, descricao: $subTitle, preco: $price)";
-  }
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "titulo": titulo,
+        "descricao": descricao,
+        "preco": preco,
+      };
 }

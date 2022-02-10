@@ -1,9 +1,10 @@
 import 'package:app_ad/screens/home_screen.dart';
+import 'package:app_ad/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(MaterialApp(
-      title: 'Aplicativo de tarefas',
+      title: 'Aplicativo de anuncios',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
           primarySwatch: Colors.amber,
@@ -18,5 +19,5 @@ void main() {
             alignLabelWithHint: true,
             floatingLabelBehavior: FloatingLabelBehavior.always,
           )),
-      home: HomeScreen()));
+      home: const LoginScreen()));
 }

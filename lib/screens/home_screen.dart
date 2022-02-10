@@ -1,212 +1,109 @@
-import 'dart:io';
+import 'dart:developer';
 
+import 'package:app_ad/database/sqlite/login_helper.dart';
 import 'package:app_ad/database/sqlite/anuncio_helper.dart';
 import 'package:app_ad/models/ad.dart';
+import 'package:app_ad/screens/login_screen.dart';
+import 'package:app_ad/screens/register_ad_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'register_ad_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Ad> _lista = List.empty(growable: true);
-  //final FilePersistence _filePersistence = FilePersistence();
-  AnuncioHelper _helper = AnuncioHelper();
+  late Future<List<Ad>> _posts;
+  final AdHelper _helper = AdHelper();
 
   @override
   void initState() {
     super.initState();
-    _helper.getAll().then((data) {
-      setState(() {
-        _lista = data;
-      });
-    });
+    _posts = _helper.getAdsByUser();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        title: const Text("Gerenciador de anuncios"),
+        title: const Text("GERENCIADOR ANUNCIOS"),
         centerTitle: true,
-      ),
-      body: ListView.separated(
-        itemCount: _lista.length,
-        itemBuilder: (context, index) {
-          Ad anuncio = _lista[index];
-          return Dismissible(
-            key: UniqueKey(),
-            background: Container(
-              color: Colors.yellow,
-              child: const Align(
-                alignment: Alignment(-0.8, 0.0),
-                child: Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            secondaryBackground: Container(
-              color: Colors.red,
-              child: const Align(
-                alignment: Alignment(0.8, 0.0),
-                child: Icon(
-                  Icons.delete,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            onDismissed: (direction) async {
-              if (direction == DismissDirection.endToStart) {
-                int? qtd = await _helper.delete(anuncio);
-                if (qtd != null && qtd > 0) {
-                  setState(() {
-                    _lista.removeAt(index);
-                    const snackBar = SnackBar(
-                        content: Text('Anúncio removido com sucesso!'),
-                        backgroundColor: Colors.red);
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  });
-                }
-              }
+        backgroundColor: Colors.blue[900],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add_circle_outline),
+            onPressed: () async {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => CadastroAnuncio()));
             },
-            confirmDismiss: (direction) async {
-              if (direction == DismissDirection.startToEnd) {
-                Ad? editAd = await Navigator.push(
+          ),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: () async {
+              final loginHelper = LoginHelper();
+              await loginHelper.logout();
+              if (await loginHelper.isUserLogged() == false) {
+                Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => CadastroAnuncio(ad: anuncio)));
-                if (editAd != null) {
-                  int? qtd = await _helper.edit(editAd);
-                  if (qtd != null && qtd > 0) {
-                    setState(() {
-                      _lista.removeAt(index);
-                      _lista.insert(index, editAd);
-
-                      const snackBar = SnackBar(
-                        content: Text("Anuncio editado com sucesso"),
-                        backgroundColor: Colors.yellow,
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    });
-                  }
-                }
-                return false;
-              } else if (direction == DismissDirection.endToStart) {
-                return true;
+                        builder: (context) => const LoginScreen()));
               }
             },
-            child: ListTile(
-              leading: anuncio.image != null
-                  ? CircleAvatar(
-                      backgroundImage: FileImage(File(anuncio.image!)),
-                    )
-                  : const SizedBox(),
-              title: Text(anuncio.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
-                  )),
-              subtitle: Text(anuncio.subTitle,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  )),
-              trailing: Text("R\$ ${anuncio.price}"),
-              onLongPress: () async {
-                showBottomSheet(
-                    context: context,
-                    builder: (context) {
-                      return Container(
-                          height: 250,
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                  leading: const Icon(Icons.email),
-                                  title: const Text("Enviar por email"),
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    final Uri params = Uri(
-                                        scheme: "mailto",
-                                        path: "igrmartoli@gmail.com",
-                                        queryParameters: {
-                                          "subject":
-                                              "Duvidas sobre produto do app",
-                                          "body":
-                                              "Olá, tenho duvida em um produto anunciado no app."
-                                        });
-
-                                    final url = params.toString();
-                                    if (!await launch(url.toString())) {
-                                      throw 'não foi possivel abrir a url ${url}';
-                                    }
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.sms),
-                                  title: const Text("Enviar por sms"),
-                                  onTap: () async {
-                                    Navigator.pop(context);
-                                    final Uri params = Uri(
-                                        scheme: "sms",
-                                        path: "+5564993001158",
-                                        queryParameters: {
-                                          "body":
-                                              "Olá, tenho duvida em um produto anunciado no app."
-                                        });
-
-                                    final url = params.toString();
-                                    if (!await launch(url)) {
-                                      throw 'não foi possivel abrir a url ${url}';
-                                    }
-                                  }),
-                              ListTile(
-                                  leading: const Icon(Icons.cancel),
-                                  title: const Text("Cancelar"),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  })
-                            ],
-                          ));
-                    });
-              },
-            ),
-          );
-        },
-        separatorBuilder: (context, itemBuilder) => Divider(),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () async {
-          try {
-            Ad? newAd = await Navigator.push(context,
-                MaterialPageRoute(builder: (context) => CadastroAnuncio()));
-
-            if (newAd != null) {
-              Ad? savedAd = await _helper.save(newAd);
-              if (savedAd != null) {
-                setState(() {
-                  _lista.add(savedAd);
-                  const SnackBar snackBar = SnackBar(
-                    content: Text("Anunciado com sucesso"),
-                    backgroundColor: Colors.green,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                });
-              }
-            }
-          } catch (error) {
-            print("Error: ${error.toString()}");
+      body: FutureBuilder(
+        future: _helper.getAdsByUser(),
+        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+          if (snapshot.hasData) {
+            List posts = snapshot.data!;
+            return ListView.separated(
+              itemCount: posts.length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                return InkWell(
+                  child: ListTile(
+                    title: Text(
+                      posts[index].titulo,
+                      style: TextStyle(fontSize: 18, color: Colors.blue[900]),
+                    ),
+                    subtitle: Text(
+                      posts[index].descricao.replaceAll('\n', ' '),
+                      textAlign: TextAlign.justify,
+                    ),
+                    onLongPress: () async {
+                      final adHelper = AdHelper();
+                      bool? retur = await adHelper.removeAd(posts[index].id);
+                      if (retur == true) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                        );
+                      } else {
+                        log('nao removeu');
+                      }
+                    },
+                    isThreeLine: true,
+                    trailing: Wrap(
+                      spacing: 12,
+                      children: [
+                        const Icon(Icons.price_change),
+                        Text(posts[index].preco.toString()),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
-          print("Lista: ${_lista.toString()}");
         },
       ),
     );

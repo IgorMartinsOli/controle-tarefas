@@ -1,9 +1,10 @@
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:app_ad/database/sqlite/anuncio_helper.dart';
 import 'package:app_ad/models/ad.dart';
+import 'package:app_ad/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 // ignore: must_be_immutable
 class CadastroAnuncio extends StatefulWidget {
@@ -14,6 +15,8 @@ class CadastroAnuncio extends StatefulWidget {
   @override
   _CadastroAnuncioState createState() => _CadastroAnuncioState();
 }
+
+AdHelper _helper = AdHelper();
 
 class _CadastroAnuncioState extends State<CadastroAnuncio> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -27,10 +30,9 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
     super.initState();
     if (widget.ad != null) {
       setState(() {
-        _titleController.text = widget.ad!.title;
-        _descController.text = widget.ad!.subTitle;
-        _priceController.text = widget.ad!.price.toString();
-        _image = widget.ad!.image;
+        _titleController.text = widget.ad!.titulo;
+        _descController.text = widget.ad!.descricao;
+        _priceController.text = widget.ad!.preco.toString();
       });
     }
   }
@@ -44,7 +46,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
         centerTitle: true,
       ),
       body: Column(children: [
-        GestureDetector(
+        /*GestureDetector(
             child: Container(
                 margin: const EdgeInsets.symmetric(vertical: 20),
                 height: 120,
@@ -75,7 +77,7 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                   _image = imagemSalva.path;
                 });
               }
-            }),
+            }),*/
         Form(
           key: _formKey,
           child: Column(
@@ -146,18 +148,19 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                         child: Text(widget.ad == null ? "Cadastrar" : "Editar",
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 18)),
-                        onPressed: () {
-                          FocusScope.of(context).unfocus();
+                        onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            if (widget.ad == null) {
-                              Ad novoAnuncio = Ad(
-                                id: widget.ad == null ? null : widget.ad!.id,
-                                title: _titleController.text,
-                                subTitle: _descController.text,
-                                price: double.parse(_priceController.text),
-                                image: _image,
-                              );
-                              Navigator.pop(context, novoAnuncio);
+                            Ad? ad = await _helper.newAd(
+                                0,
+                                _titleController.text,
+                                _descController.text,
+                                double.parse(_priceController.text));
+                            if (ad != null) {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const HomeScreen()));
                             }
                           }
                         },
@@ -174,7 +177,10 @@ class _CadastroAnuncioState extends State<CadastroAnuncio> {
                             style:
                                 TextStyle(color: Colors.white, fontSize: 18)),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const HomeScreen()));
                         },
                       ),
                     ),

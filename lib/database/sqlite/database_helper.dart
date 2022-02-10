@@ -1,4 +1,4 @@
-import 'package:app_ad/database/sqlite/anuncio_helper.dart';
+/*import 'package:app_ad/database/sqlite/anuncio_helper.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -39,3 +39,4 @@ class DatabaseHelper {
     }
   }
 }
+*/

@@ -1,61 +1,41 @@
-import 'package:app_ad/database/sqlite/database_helper.dart';
+import 'dart:developer';
+
 import 'package:app_ad/models/ad.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:app_ad/service/ad_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AnuncioHelper {
-  static final String tableName = 'anuncios';
-  static final String idColumn = 'id';
-  static final String tituloColumn = 'titulo';
-  static final String descricaoColumn = 'descricao';
-  static final String precoColumn = 'preco';
-  static final String imagePathColumn = 'image';
-
-  static String get createScript {
-    return "CREATE TABLE ${tableName}( " +
-        "$idColumn INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        "$tituloColumn TEXT NOT NULL, " +
-        "$descricaoColumn TEXT NOT NULL, " +
-        "$precoColumn REAL NOT NULL, " +
-        "$imagePathColumn TEXT NULL);";
-  }
-
-  Future<Ad?> save(Ad anuncio) async {
-    Database? db = await DatabaseHelper().db;
-    if (db != null) {
-      anuncio.id = await db.insert(tableName, anuncio.toMap());
-      return anuncio;
+class AdHelper {
+  Future<List<Ad>> getAdsByUser() async {
+    AdService _service = AdService();
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool("logged") != null) {
+      return _service.fetchAds();
     }
-    return null;
+    return List<Ad>.empty();
   }
 
-  Future<List<Ad>> getAll() async {
-    Database? db = await DatabaseHelper().db;
-    List<Ad> anuncios = List.empty(growable: true);
-
-    if (db != null) {
-      List<Map> mapAnuncios = await db.query(tableName);
-
-      for (Map anuncio in mapAnuncios) {
-        anuncios.add(Ad.fromMap(anuncio));
+  Future<Ad?> newAd(
+      int id, String titulo, String descricao, double preco) async {
+    AdService _service = AdService();
+    Ad newAd = Ad(id: id, titulo: titulo, descricao: descricao, preco: preco);
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool("logged") != null) {
+      Ad? adR = await _service.newAd(newAd);
+      if (adR != null) {
+        return adR;
+      } else {
+        return null;
       }
     }
-
-    return anuncios;
   }
 
-  Future<int?> edit(Ad anuncio) async {
-    Database? db = await DatabaseHelper().db;
-    if (db != null) {
-      return await db.update(tableName, anuncio.toMap(),
-          where: "$idColumn = ?", whereArgs: [anuncio.id]);
-    }
-  }
-
-  Future<int?> delete(Ad anuncio) async {
-    Database? db = await DatabaseHelper().db;
-    if (db != null) {
-      return await db
-          .delete(tableName, where: "$idColumn = ?", whereArgs: [anuncio.id]);
+  Future<bool?> removeAd(int id) async {
+    AdService _service = AdService();
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool("logged") != null) {
+      bool? retur = (await _service.removeAd(id));
+      log('retornou $retur');
+      return retur;
     }
   }
 }
